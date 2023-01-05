@@ -71,6 +71,37 @@ point_exorde(){
     echo "或者等过一天使用查询状态，状态中的 [CURRENT REWARDS & REP] 信息也可以显示你的积分"
 }
 
+update_exorde(){
+    echo "正在更新节点程序，将会停止并删除旧的节点程序"
+    docker stop exorde-cli && docker rm exorde-cli
+    sleep 10
+    echo "删除并停止成功！脚本将会获取最新节点程序"
+    sleep 5
+    read -p "请输入你之前所使用的钱包地址(比如0x0000000):" address
+    echo "你输入的钱包地址是 $address"
+    read -r -p "请确认输入的钱包地址正确，正确请输入Y，否则将退出 [Y/n] " input
+    case $input in
+        [yY][eE][sS]|[yY])
+            echo "继续更新"
+            ;;
+
+        *)
+            echo "继续更新..."
+            exit 1
+            ;;
+    esac
+
+    docker run \
+    -d \
+    --restart unless-stopped \
+    --pull always \
+    --name exorde-cli \
+    exordelabs/exorde-cli \
+    -m ${address} \
+    -l 2
+    echo "更新成功！"
+}
+
 
 echo && echo -e " ${Red_font_prefix}Exorde 一键脚本${Font_color_suffix} by \033[1;35mLattice\033[0m
 此脚本完全免费开源，由推特用户 ${Green_font_prefix}@L4ttIc3${Font_color_suffix} 开发
@@ -85,6 +116,7 @@ echo && echo -e " ${Red_font_prefix}Exorde 一键脚本${Font_color_suffix} by \
   -----其他功能------
  ${Green_font_prefix} 5.查询 Exorde 状态 ${Font_color_suffix}
  ${Green_font_prefix} 6.查询 Exorde 积分 ${Font_color_suffix}
+ ${Green_font_prefix} 7.更新 Exorde 节点程序 ${Font_color_suffix}
  ———————————————————————" && echo
 read -e -p " 请输入数字 [1-6]:" num
 case "$num" in
@@ -106,7 +138,9 @@ case "$num" in
 6)
     point_exorde
     ;;
-
+7)
+    update_exorde
+    ;;
 *)
     echo
     echo -e " ${Error} 请输入正确的数字"
